@@ -116,9 +116,9 @@ class Action(Enum):
 class Effect:
 
     action: Action
-    value: int
+    value: float
 
-    def __init__(self, action: Action, value: int):
+    def __init__(self, action: Action, value: float):
         self.action = action
         self.value = value
         return
@@ -126,7 +126,7 @@ class Effect:
     def __action__(self) -> Action:
         return self.action
     
-    def __value__(self) -> int:
+    def __value__(self) -> float:
         return self.value
 
     def __str__(self) -> str:
@@ -160,7 +160,7 @@ class Item:
         return self.effects
 
     def __str__(self) -> str:
-        return f"{self.name} ({self.rarity.__str__()}) : {self.desc} \n\t{self.effects.__str__()}"
+        return f"{self.name} ({self.rarity.__str__()}) : {self.desc} \n\t{[effect.__str__() for effect in self.effects]}"
 
     def add_effect(self, effect: Effect):
         self.effects.append(effect)
