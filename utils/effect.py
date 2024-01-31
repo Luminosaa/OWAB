@@ -1,4 +1,4 @@
-from enumerations.action import Action
+from action import Action
 
 class Effect:
 
