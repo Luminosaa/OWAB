@@ -1,3 +1,4 @@
+from exceptiongroup import catch
 from utils.effect import Effect
 from utils.rarity import Rarity
 from utils.action import Action
@@ -13,6 +14,7 @@ class Item:
         self.desc: str = desc
         self.effects: list[Effect] = []
         self.type: Type = type 
+        self.solverVar = None
         return
 
     def __name__(self) -> str:
@@ -30,13 +32,24 @@ class Item:
     def __effects__(self):
         return self.effects
     
-    def __effects__(self):
+    def __type__(self):
         return self.type
     
     def __str__(self) -> str:
-        return f"{self.name} ({self.type.__str__()}) ({self.rarity.__str__()}) : \n\t{[effect.__str__() for effect in self.effects]}"
+        return f"{self.name} ({self.type.__str__()}) ({self.rarity.__str__()}:{self.__level__()}) : \n\t{[effect.__str__() for effect in self.effects]}"
+
+    def __solverVar__(self):
+        return self.solverVar
 
     def add_effect(self, effect: Effect):
         self.effects.append(effect)
         return
     
+    def setSolverVar(self, solverVar):
+        self.solverVar = solverVar
+
+    def getEffectValue(self, action: str):
+        for e in self.effects:
+            if e.action == action:
+                return e.value
+        return 0

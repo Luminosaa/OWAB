@@ -2,17 +2,23 @@ from urllib3 import Retry
 from utils.item import Item, Rarity, Effect, Action, Type
 from ortools.linear_solver import pywraplp
 import json
+from utils.action import Action
 
-class WakfuSolver:
+class WakfuSolver():
     def __init__(self):
         self.items : list(Item) = []
         self.solver: pywraplp.Solver = pywraplp.Solver.CreateSolver("SAT")
         if not self.solver:
             print("Error : invalid solver")
             exit(0)
-        self.parseItems()
-    
-    def parseType(self, item) -> type:
+        self.objective: pywraplp.Objective = self.solver.Objective()
+        self.__parseItems()
+        for item in self.items:
+            item.setSolverVar(self.solver.IntVar(0, 1, item.name))
+
+
+    # Map item type (used in parseItems)
+    def __parseType(self, item) -> type:
         itemTypeId = item["definition"]["item"]["baseParameters"]["itemTypeId"]
         if itemTypeId in [101, 111, 114, 117, 223, 253, 519]:
             return Type.FIRST_WEAPON_2_HANDS
@@ -38,8 +44,9 @@ class WakfuSolver:
             return Type.SHOULDERS
         else:
             return Type.AUTRE
-        
-    def parseItems(self):
+    
+    # Parse item list (used int __init__)
+    def __parseItems(self):
         with open("jsons/items.json", "r") as f:
             items = json.load(f)
         action_dict: dict = {str(member.value): name for name, member in Action.__members__.items()}
@@ -48,7 +55,7 @@ class WakfuSolver:
             level: int = item["definition"]["item"]["level"]
             rarity: Rarity = [name if member.value == item["definition"]["item"]["baseParameters"]["rarity"] else Rarity.COMMUN for name, member in Rarity.__members__.items()][0]
             desc: str = item["description"]["fr"] if "description" in item else "Pas de description"
-            type = self.parseType(item)
+            type = self.__parseType(item)
             if type == Type.AUTRE:
                 continue
             if len(item["definition"]["equipEffects"]) == 0:
@@ -84,12 +91,48 @@ class WakfuSolver:
                 self.items.pop(i)
             else:
                 i+=1
+
+    def uniqueContraint(self):
+        type_map = {}
+        type_map[Rarity.RELIQUE] = []
+        type_map[Rarity.EPIQUE] = []
+        # Init a map by type 
+        for type, member in Type.__members__.items():
+            type_map[member] = []
+        # Fill the map
+        for item in self.items:
+            type_map[item.__type__()].append(item.__solverVar__())
+            if item.__rarity__() == Rarity.EPIQUE:
+                type_map[Rarity.EPIQUE].append(item)
+            elif item.__rarity__() == Rarity.RELIQUE:
+                type_map[Rarity.RELIQUE].append(item)
         
-    
+        # Add constraint for each type 
+        for type, member in Type.__members__.items():
+            self.solver.Add(sum(type_map[member]) <= 1)
+
+    def addConstraint(self, stat:str, value:str, max:bool=True):
+        return 0
+
+
+    def maximize(self, stat: str):
+        self.uniqueContraint()
+        for item in self.items:
+            self.objective.SetCoefficient(item.__solverVar__(), item.getEffectValue(stat))
+        self.objective.SetMaximization()
+
+    def solve(self):
+        self.solver.Solve()
+        print("Objective value =", self.objective.Value())
+        for item in self.items:
+            if (item.__solverVar__().solution_value() != 0):
+                print(item)
+
+
 if __name__ == "__main__":
-    WS:WakfuSolver = WakfuSolver()
-    WS.minLevelItem(230)
+    WS = WakfuSolver()
+    WS.minLevelItem(0)
     WS.maxLevelItem(230)
-    for i in WS.__items__():
-        print(i)
-    print(len(WS.__items__()))
+    WS.maximize("GAIN_PORTEE")
+    WS.solve()
+

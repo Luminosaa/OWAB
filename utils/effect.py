@@ -5,6 +5,7 @@ class Effect:
     action: Action
     value: int
     n_elements: int
+    
     def __init__(self, action: Action, value: int, n_elements=-1):
         self.action = action
         self.value = int(value)
