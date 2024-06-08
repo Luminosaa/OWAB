@@ -53,7 +53,7 @@ class WakfuSolver():
         for item in items:
             name: str = item["title"]["fr"]
             level: int = item["definition"]["item"]["level"]
-            for name, member in Rarity.__members__.items():
+            for n, member in Rarity.__members__.items():
                 if member.value == item["definition"]["item"]["baseParameters"]["rarity"]:
                     rarity = member
                     break
@@ -105,15 +105,17 @@ class WakfuSolver():
 
         for item in self.items:
             type_map[item.__type__()].append(item.__solverVar__())
-            if item.__rarity__() == Rarity.EPIQUE:
+            if item.__rarity__() == Rarity.EPIQUE.value:
                 type_map[Rarity.EPIQUE].append(item)
-            elif item.__rarity__() == Rarity.RELIQUE:
+            elif item.__rarity__() == Rarity.RELIQUE.value:
                 type_map[Rarity.RELIQUE].append(item)      
 
         # Add constraint for each type 
         for type, member in Type.__members__.items():
             print(member)
             self.solver.Add(sum(type_map[member]) <= 1)
+        self.solver.Add(sum(type_map[Rarity.EPIQUE]) <= 1)
+        self.solver.Add(sum(type_map[Rarity.RELIQUE]) <= 1)
         self.solver.Add(2 >= sum(type_map[Type.FIRST_WEAPON_1_HAND]) + sum(type_map[Type.SECOND_WEAPON]) + 2 * (sum(type_map[Type.FIRST_WEAPON_2_HANDS])))
         
     def maximize(self, stats: list[Action]):
