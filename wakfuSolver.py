@@ -107,6 +107,7 @@ class WakfuSolver():
             elif item.__rarity__() == Rarity.RELIQUE:
                 type_map[Rarity.RELIQUE].append(item)
         
+        
         # Add constraint for each type 
         for type, member in Type.__members__.items():
             self.solver.Add(sum(type_map[member]) <= 1)
@@ -132,7 +133,7 @@ class WakfuSolver():
 if __name__ == "__main__":
     WS = WakfuSolver()
     WS.minLevelItem(0)
-    WS.maxLevelItem(230)
+    WS.maxLevelItem(50)
     WS.maximize("GAIN_PORTEE")
     WS.solve()
 
