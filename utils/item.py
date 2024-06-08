@@ -4,7 +4,7 @@ from utils.action import Action
 from utils.type import Type
 
 # An item is defined by :
-# Name, level,
+# Name, level, rarity, desc, type
 class Item:
     def __init__(self, name: str, level: int, rarity: Rarity, desc: str, type:Type):
         self.name: str = name
@@ -47,8 +47,8 @@ class Item:
     def setSolverVar(self, solverVar):
         self.solverVar = solverVar
 
-    def getEffectValue(self, action: str):
-        for e in self.effects:
-            if e.action == action:
-                return e.value
+    def getEffectValue(self, action: Action):
+        for e in self.__effects__():
+            if e.__action__() == action.name:
+                return e.__value__()
         return 0

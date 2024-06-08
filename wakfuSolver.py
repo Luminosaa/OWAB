@@ -6,7 +6,7 @@ from utils.action import Action
 
 class WakfuSolver():
     def __init__(self):
-        self.items : list(Item) = []
+        self.items : list[Item] = []
         self.solver: pywraplp.Solver = pywraplp.Solver.CreateSolver("SAT")
         if not self.solver:
             print("Error : invalid solver")
@@ -99,27 +99,24 @@ class WakfuSolver():
         # Init a map by type 
         for type, member in Type.__members__.items():
             type_map[member] = []
-        # Fill the map
+
         for item in self.items:
             type_map[item.__type__()].append(item.__solverVar__())
             if item.__rarity__() == Rarity.EPIQUE:
                 type_map[Rarity.EPIQUE].append(item)
             elif item.__rarity__() == Rarity.RELIQUE:
-                type_map[Rarity.RELIQUE].append(item)
-        
-        
+                type_map[Rarity.RELIQUE].append(item)      
+
         # Add constraint for each type 
         for type, member in Type.__members__.items():
+            print(member)
             self.solver.Add(sum(type_map[member]) <= 1)
-
-    def addConstraint(self, stat:str, value:str, max:bool=True):
-        return 0
-
-
-    def maximize(self, stat: str):
+        self.solver.Add(2 >= sum(type_map[Type.FIRST_WEAPON_1_HAND]) + sum(type_map[Type.SECOND_WEAPON]) + 2 * (sum(type_map[Type.FIRST_WEAPON_2_HANDS])))
+        
+    def maximize(self, stats: list[Action]):
         self.uniqueContraint()
         for item in self.items:
-            self.objective.SetCoefficient(item.__solverVar__(), item.getEffectValue(stat))
+            self.objective.SetCoefficient(item.__solverVar__(), sum(item.getEffectValue(stat) for stat in stats))
         self.objective.SetMaximization()
 
     def solve(self):
@@ -129,11 +126,24 @@ class WakfuSolver():
             if (item.__solverVar__().solution_value() != 0):
                 print(item)
 
+    def addEffectConstraint(self, effect_action: Action, threshold: int):
+        constraint_expr = sum(item.__solverVar__() * item.getEffectValue(effect_action) for item in self.items)
+        self.solver.Add(constraint_expr >= threshold)
+        
 
 if __name__ == "__main__":
     WS = WakfuSolver()
-    WS.minLevelItem(0)
+    WS.minLevelItem(40)
     WS.maxLevelItem(50)
-    WS.maximize("GAIN_PORTEE")
-    WS.solve()
+    WS.addEffectConstraint(Action.BOOST_PA, 4)
+    WS.addEffectConstraint(Action.BOOST_PM, 2)
+    WS.addEffectConstraint(Action.GAIN_PORTEE, 1)
 
+    to_maximize = [Action.GAIN_MAITRISE_DISTANCE, 
+                   Action.GAIN_MAITRISE_SOIN, 
+                   Action.GAIN_MAITRISE_ELEMENTAIRE, 
+                   Action.GAIN_MAITRISE_ELEMENTAIRE_DANS_UN_NOMBRE_VARIABLE_D_ELEMENTS,
+                   Action.GAIN_MAITRISE_FEU,
+                   Action.GAIN_MAITRISE_TERRE]
+    WS.maximize(to_maximize)
+    WS.solve()

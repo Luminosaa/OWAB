@@ -4,16 +4,16 @@ from enum import Enum
 class Type(Enum):
     FIRST_WEAPON_2_HANDS = 0
     FIRST_WEAPON_1_HAND = 1
-    SECOND_WEAPON = 4
-    RING = 2
-    LEGS = 3
-    NECK = 4
-    BACK = 5
-    BELT = 6
-    HEAD = 7
-    CHEST = 8
-    SHOULDERS = 9 
-    AUTRE = 10 
+    SECOND_WEAPON = 2
+    RING = 3
+    LEGS = 4
+    NECK = 5
+    BACK = 6
+    BELT = 7
+    HEAD = 8
+    CHEST = 9
+    SHOULDERS = 10 
+    AUTRE = 11 
 
     def __str__(self):
         if self == Type.FIRST_WEAPON_2_HANDS:
