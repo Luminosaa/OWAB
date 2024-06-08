@@ -53,7 +53,10 @@ class WakfuSolver():
         for item in items:
             name: str = item["title"]["fr"]
             level: int = item["definition"]["item"]["level"]
-            rarity: Rarity = [name if member.value == item["definition"]["item"]["baseParameters"]["rarity"] else Rarity.COMMUN for name, member in Rarity.__members__.items()][0]
+            for name, member in Rarity.__members__.items():
+                if member.value == item["definition"]["item"]["baseParameters"]["rarity"]:
+                    rarity = member
+                    break
             desc: str = item["description"]["fr"] if "description" in item else "Pas de description"
             type = self.__parseType(item)
             if type == Type.AUTRE:
@@ -133,14 +136,14 @@ class WakfuSolver():
 
 if __name__ == "__main__":
     WS = WakfuSolver()
-    WS.minLevelItem(40)
+    WS.minLevelItem(0)
     WS.maxLevelItem(50)
     WS.addEffectConstraint(Action.BOOST_PA, 4)
     WS.addEffectConstraint(Action.BOOST_PM, 2)
     WS.addEffectConstraint(Action.GAIN_PORTEE, 1)
 
     to_maximize = [(Action.GAIN_MAITRISE_DISTANCE, 1), 
-                   (Action.GAIN_MAITRISE_SOIN, 1), 
+                   (Action.GAIN_MAITRISE_SOIN, 1.5), 
                    (Action.GAIN_MAITRISE_ELEMENTAIRE, 1), 
                    (Action.GAIN_MAITRISE_ELEMENTAIRE_DANS_UN_NOMBRE_VARIABLE_D_ELEMENTS, 1),
                    (Action.GAIN_MAITRISE_FEU, 0.5),
