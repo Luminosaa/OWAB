@@ -1,4 +1,3 @@
-from exceptiongroup import catch
 from utils.effect import Effect
 from utils.rarity import Rarity
 from utils.action import Action
