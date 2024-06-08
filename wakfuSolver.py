@@ -116,7 +116,7 @@ class WakfuSolver():
     def maximize(self, stats: list[Action]):
         self.uniqueContraint()
         for item in self.items:
-            self.objective.SetCoefficient(item.__solverVar__(), sum(item.getEffectValue(stat) for stat in stats))
+            self.objective.SetCoefficient(item.__solverVar__(), sum(item.getEffectValue(stat) * factor for (stat, factor) in stats))
         self.objective.SetMaximization()
 
     def solve(self):
@@ -139,11 +139,11 @@ if __name__ == "__main__":
     WS.addEffectConstraint(Action.BOOST_PM, 2)
     WS.addEffectConstraint(Action.GAIN_PORTEE, 1)
 
-    to_maximize = [Action.GAIN_MAITRISE_DISTANCE, 
-                   Action.GAIN_MAITRISE_SOIN, 
-                   Action.GAIN_MAITRISE_ELEMENTAIRE, 
-                   Action.GAIN_MAITRISE_ELEMENTAIRE_DANS_UN_NOMBRE_VARIABLE_D_ELEMENTS,
-                   Action.GAIN_MAITRISE_FEU,
-                   Action.GAIN_MAITRISE_TERRE]
+    to_maximize = [(Action.GAIN_MAITRISE_DISTANCE, 1), 
+                   (Action.GAIN_MAITRISE_SOIN, 1), 
+                   (Action.GAIN_MAITRISE_ELEMENTAIRE, 1), 
+                   (Action.GAIN_MAITRISE_ELEMENTAIRE_DANS_UN_NOMBRE_VARIABLE_D_ELEMENTS, 1),
+                   (Action.GAIN_MAITRISE_FEU, 0.5),
+                   (Action.GAIN_MAITRISE_TERRE, 0.5)]
     WS.maximize(to_maximize)
     WS.solve()
